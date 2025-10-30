@@ -229,10 +229,10 @@ function startExpressServer() {
   });
 
   // Start our server and tests!
-  const listener = app.listen(PORT, '0.0.0.0', function () {
+const listener = app.listen(PORT, '0.0.0.0', function () {
     console.log('Your app is listening on port ' + listener.address().port);
 
-    /* --- Este es el bloque que comentamos ---
+    // --- Este es el bloque que DEBE estar activo ---
     if (process.env.NODE_ENV === 'test') { 
       console.log('Running Tests...');
       setTimeout(function () {
@@ -242,14 +242,16 @@ function startExpressServer() {
           console.log('Tests are not valid:');
           console.error(e);
         }
-      }, 1500);
+      }, 3500); // 1500ms de espera para asegurar la conexión a la DB
     }
-    */ // <--- ¡ASEGÚRATE DE CERRAR EL COMENTARIO AQUÍ!
+    // --- Fin del bloque de tests ---
 
   }); // <--- Este es el cierre para app.listen
 } // <--- Este es el cierre para startExpressServer
 
-// Iniciar el servidor
-startServer();
+// Iniciar el servidor SÓLO si no estamos en modo de prueba
+if (require.main === module) {
+  startServer();
+}
 
 module.exports = app; // for testing
