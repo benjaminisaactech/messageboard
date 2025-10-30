@@ -20,10 +20,10 @@ class ReplyController {
       };
 
       const result = await this.collection.updateOne(
-        { _id: new ObjectId(threadId), board: board },
-        {
-          $push: { replies: newReply },
-          $set: { bumped_on: new Date() }
+    { _id: new ObjectId(threadId), board: board },
+    {
+        $push: { replies: newReply },
+        $set: { bumped_on: newReply.created_on }
         }
       );
 

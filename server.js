@@ -1,26 +1,23 @@
 'use strict';
 require('dotenv').config();
-const express     = require('express');
-const bodyParser  = require('body-parser');
-const cors        = require('cors');
-const helmet      = require('helmet');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const helmet = require('helmet');
 const { MongoClient } = require('mongodb');
 
-const apiRoutes         = require('./routes/api.js');
-const fccTestingRoutes  = require('./routes/fcctesting.js');
-const runner            = require('./test-runner');
+const apiRoutes = require('./routes/api.js');
+const fccTestingRoutes = require('./routes/fcctesting.js');
+const runner = require('./test-runner');
 
 const app = express();
 
 app.use(helmet({
   frameguard: { action: 'sameorigin' },
-
   // No permitir la precarga de DNS
   dnsPrefetchControl: { allow: false },
-
   // Permitir que el sitio envíe el referente únicamente a sus propias páginas
   referrerPolicy: { policy: 'same-origin' },
-
   // Otras configuraciones de seguridad
   contentSecurityPolicy: false // Deshabilitado para FCC testing
 }));
@@ -58,25 +55,18 @@ app.route('/')
     res.sendFile(process.cwd() + '/views/index.html');
   });
 
-// For FCC testing purposes
+
 fccTestingRoutes(app);
 
-// Configuración de conexión a base de datos
+
 const MONGO_URI = process.env.DB || process.env.MONGO_URI || 'mongodb://localhost:27017/anonymous_messageboard';
 const PORT = process.env.PORT || 5000;
 
-// Inicializar con almacenamiento en memoria por defecto (especialmente para pruebas)
-app.locals.db = createMemoryStorage();
-
-// Montar rutas API inmediatamente para que estén disponibles en las pruebas
-apiRoutes(app);
-
-// Función para crear una colección en memoria si no hay MongoDB disponible
 function createMemoryStorage() {
   const threads = [];
 
   const memoryDB = {
-    collection: function(name) {
+    collection: function (name) {
       return {
         insertOne: async (doc) => {
           if (!doc._id) {
@@ -203,7 +193,10 @@ function createMemoryStorage() {
   return memoryDB;
 }
 
-// Intentar conectar a MongoDB, si falla usar almacenamiento en memoria
+app.locals.db = createMemoryStorage();
+apiRoutes(app);
+
+
 async function startServer() {
   try {
     console.log('Attempting to connect to MongoDB...');
@@ -221,7 +214,6 @@ async function startServer() {
   } catch (err) {
     console.log('MongoDB connection failed, using memory storage for development:', err.message);
 
-    // Mantener almacenamiento en memoria
     app.locals.db = createMemoryStorage();
 
     startExpressServer();
@@ -230,7 +222,7 @@ async function startServer() {
 
 function startExpressServer() {
   // 404 Not Found Middleware
-  app.use(function(req, res, next) {
+  app.use(function (req, res, next) {
     res.status(404)
       .type('text')
       .send('Not Found');
@@ -240,7 +232,8 @@ function startExpressServer() {
   const listener = app.listen(PORT, '0.0.0.0', function () {
     console.log('Your app is listening on port ' + listener.address().port);
 
-    if (process.env.NODE_ENV === 'test') {
+    /* --- Este es el bloque que comentamos ---
+    if (process.env.NODE_ENV === 'test') { 
       console.log('Running Tests...');
       setTimeout(function () {
         try {
@@ -251,8 +244,10 @@ function startExpressServer() {
         }
       }, 1500);
     }
-  });
-}
+    */ // <--- ¡ASEGÚRATE DE CERRAR EL COMENTARIO AQUÍ!
+
+  }); // <--- Este es el cierre para app.listen
+} // <--- Este es el cierre para startExpressServer
 
 // Iniciar el servidor
 startServer();
